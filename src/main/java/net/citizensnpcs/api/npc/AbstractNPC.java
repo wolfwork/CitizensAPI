@@ -5,8 +5,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
-import javax.annotation.Nullable;
-
 import net.citizensnpcs.api.CitizensAPI;
 import net.citizensnpcs.api.ai.GoalController;
 import net.citizensnpcs.api.ai.SimpleGoalController;
@@ -287,7 +285,7 @@ public abstract class AbstractNPC implements NPC {
         Set<DataKey> keys = Sets.newHashSet(root.getRelative("traits").getSubKeys());
         Iterables.addAll(keys, Iterables.transform(Splitter.on(',').split(traitNames), new Function<String, DataKey>() {
             @Override
-            public DataKey apply(@Nullable String input) {
+            public DataKey apply(String input) {
                 return root.getRelative("traits." + input);
             }
         }));
@@ -390,15 +388,13 @@ public abstract class AbstractNPC implements NPC {
         data().setPersistent(NPC.DEFAULT_PROTECTED_METADATA, isProtected);
     }
 
-    private void teleport(final Entity entity, Location location, boolean loaded, int delay) {
-        if (!loaded)
-            location.getBlock().getChunk();
+    private void teleport(final Entity entity, Location location, int delay) {
         final Entity passenger = entity.getPassenger();
         entity.eject();
         entity.teleport(location);
         if (passenger == null)
             return;
-        teleport(passenger, location, true, delay++);
+        teleport(passenger, location, delay++);
         Runnable task = new Runnable() {
             @Override
             public void run() {
@@ -420,7 +416,8 @@ public abstract class AbstractNPC implements NPC {
         while (entity.getVehicle() != null) {
             entity = entity.getVehicle();
         }
-        teleport(entity, location, false, 5);
+        location.getBlock().getChunk();
+        teleport(entity, location, 5);
     }
 
     public void update() {
